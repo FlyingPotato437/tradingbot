@@ -1000,9 +1000,404 @@ def run_analysis():
         update_display(layout)
 
 
+def main_menu():
+    """Show main menu when no command is specified"""
+    # Display ASCII art welcome message
+    with open("./cli/static/welcome.txt", "r") as f:
+        welcome_ascii = f.read()
+
+    # Create welcome box content
+    welcome_content = f"{welcome_ascii}\n"
+    welcome_content += "[bold green]TradingAgents: Multi-Agents LLM Financial Trading Framework - CLI[/bold green]\n\n"
+    welcome_content += "[dim]Built by [Tauric Research](https://github.com/TauricResearch)[/dim]"
+
+    # Create and center the welcome box
+    welcome_box = Panel(
+        welcome_content,
+        border_style="green",
+        padding=(1, 2),
+        title="Welcome to TradingAgents",
+        subtitle="Multi-Agents LLM Financial Trading Framework",
+    )
+    console.print(Align.center(welcome_box))
+    console.print()
+    
+    # Show menu options
+    console.print("[bold blue]What would you like to do?[/bold blue]\n", style="bold")
+    
+    menu_table = Table(show_header=True, header_style="bold blue", box=box.ROUNDED)
+    menu_table.add_column("Option", style="cyan", width=10)
+    menu_table.add_column("Command", style="yellow", width=20)
+    menu_table.add_column("Description", style="white")
+    
+    menu_table.add_row(
+        "1", 
+        "analyze", 
+        "Deep dive analysis: Pick a stock and get full detailed reports from all AI agents"
+    )
+    menu_table.add_row(
+        "2", 
+        "advisory", 
+        "Portfolio help: Ask AI what stocks to buy or get advice on your current holdings"
+    )
+    
+    console.print(menu_table)
+    console.print("\n[dim]Run with: python3 -m cli.py [command][/dim]")
+    console.print("[dim]Example: python3 -m cli.py advisory[/dim]\n")
+    
+    # Ask user what they want to do
+    choice = typer.prompt("Select an option (1 or 2)", type=str)
+    
+    if choice == "1":
+        run_analysis()
+    elif choice == "2":
+        run_portfolio_advisory()
+    else:
+        console.print("Invalid choice. Please run again and select 1 or 2.", style="red")
+
+
+@app.command()
+def analyze():
+    """Run full multi-agent analysis on a specific stock"""
+    run_analysis()
+
+
+@app.command()
+def advisory():
+    """Interactive portfolio advisory and stock recommendation system"""
+    run_portfolio_advisory()
+
+
+def run_portfolio_advisory():
+    """Run the portfolio advisory system"""
+    console.print("=" * 70)
+    console.print("AI-POWERED PORTFOLIO ADVISORY SYSTEM", style="bold blue")
+    console.print("=" * 70)
+    
+    # Welcome message
+    console.print("\nWelcome to the AI Portfolio Advisory System!", style="bold green")
+    console.print("This system uses multiple AI analysts to help you make investment decisions:", style="yellow")
+    console.print("• Market Analyst - Technical analysis and market trends")
+    console.print("• News Analyst - Latest news and events impact")
+    console.print("• Fundamentals Analyst - Company financials and valuation")
+    console.print("• Social Analyst - Market sentiment and social trends")
+    console.print("\nChoose from the following options:", style="bold")
+    
+    while True:
+        # Menu options
+        menu_table = Table(title="Advisory Menu", show_header=True, header_style="bold blue")
+        menu_table.add_column("Option", style="cyan", width=10)
+        menu_table.add_column("Description", style="white")
+        
+        menu_table.add_row("1", "Ask AI what stocks to buy based on your investment criteria")
+        menu_table.add_row("2", "Give AI your portfolio and get advice on what to do")
+        menu_table.add_row("3", "Compare multiple stocks using AI analysis")
+        menu_table.add_row("4", "Exit advisory system")
+        
+        console.print(menu_table)
+        
+        choice = typer.prompt("\nSelect an option (1-4)", type=int)
+        
+        if choice == 1:
+            get_stock_recommendations()
+        elif choice == 2:
+            analyze_portfolio()
+        elif choice == 3:
+            compare_stocks()
+        elif choice == 4:
+            console.print("Thank you for using the Portfolio Advisory System!", style="bold green")
+            break
+        else:
+            console.print("Invalid choice. Please select 1-4.", style="red")
+
+
+def get_stock_recommendations():
+    """Get stock recommendations based on user criteria"""
+    console.print("\n[ASK AI WHAT STOCKS TO BUY]", style="bold blue")
+    console.print("Tell me your investment criteria and I'll recommend stocks using AI analysis", style="yellow")
+    
+    # Get user preferences
+    investment_amount = typer.prompt("How much are you looking to invest? ($)", type=float)
+    risk_tolerance = typer.prompt("Risk tolerance (1=Conservative, 2=Moderate, 3=Aggressive)", type=int)
+    investment_horizon = typer.prompt("Investment time horizon (1=Short-term <1yr, 2=Medium-term 1-3yrs, 3=Long-term >3yrs)", type=int)
+    
+    # Optional sector preference
+    sector_pref = typer.prompt("Any sector preference? (tech, healthcare, finance, energy, or 'any')", default="any")
+    
+    # Recommend popular stocks based on criteria
+    recommendations = []
+    
+    if risk_tolerance == 1:  # Conservative
+        recommendations = ["AAPL", "MSFT", "JNJ", "PG", "KO"]
+    elif risk_tolerance == 2:  # Moderate
+        recommendations = ["GOOGL", "AMZN", "NVDA", "TSLA", "V"]
+    else:  # Aggressive
+        recommendations = ["NVDA", "TSLA", "AMD", "ARKK", "QQQ"]
+    
+    # Filter by sector if specified
+    if sector_pref.lower() == "tech":
+        recommendations = ["AAPL", "MSFT", "GOOGL", "NVDA", "AMD"]
+    elif sector_pref.lower() == "healthcare":
+        recommendations = ["JNJ", "PFE", "UNH", "ABBV", "TMO"]
+    elif sector_pref.lower() == "finance":
+        recommendations = ["JPM", "BAC", "WFC", "V", "MA"]
+    elif sector_pref.lower() == "energy":
+        recommendations = ["XOM", "CVX", "COP", "EOG", "SLB"]
+    
+    console.print(f"\nBased on your criteria:", style="yellow")
+    console.print(f"Investment Amount: ${investment_amount:,.2f}")
+    console.print(f"Risk Tolerance: {'Conservative' if risk_tolerance == 1 else 'Moderate' if risk_tolerance == 2 else 'Aggressive'}")
+    console.print(f"Time Horizon: {'Short-term' if investment_horizon == 1 else 'Medium-term' if investment_horizon == 2 else 'Long-term'}")
+    console.print(f"Sector: {sector_pref.upper()}")
+    
+    # Show recommendations
+    rec_table = Table(title="Stock Recommendations", show_header=True, header_style="bold green")
+    rec_table.add_column("Stock", style="cyan")
+    rec_table.add_column("Recommendation", style="white")
+    rec_table.add_column("Action", style="yellow")
+    
+    for i, symbol in enumerate(recommendations[:3], 1):
+        rec_table.add_row(symbol, f"Recommendation #{i}", "Analyze with AI")
+    
+    console.print(rec_table)
+    
+    # Offer detailed analysis
+    analyze_choice = typer.prompt("\nWould you like detailed AI analysis on any of these stocks? (y/n)", default="n")
+    
+    if analyze_choice.lower() == 'y':
+        stock_to_analyze = typer.prompt(f"Which stock would you like to analyze? ({'/'.join(recommendations[:3])})")
+        if stock_to_analyze.upper() in [s.upper() for s in recommendations[:3]]:
+            run_detailed_stock_analysis(stock_to_analyze.upper(), investment_amount)
+        else:
+            console.print("Invalid stock symbol.", style="red")
+
+
+def analyze_portfolio():
+    """Analyze user's current portfolio"""
+    console.print("\n[PORTFOLIO ANALYSIS & ADVICE]", style="bold blue")
+    console.print("Tell me your current holdings and I'll use AI analysts to advise what to do", style="yellow")
+    
+    # Get portfolio holdings
+    holdings = []
+    console.print("\nEnter your current portfolio holdings (press Enter with empty symbol to finish):")
+    
+    while True:
+        symbol = typer.prompt("Stock symbol", default="").upper()
+        if not symbol:
+            break
+        
+        shares = typer.prompt(f"Number of shares of {symbol}", type=float)
+        avg_cost = typer.prompt(f"Average cost per share of {symbol}", type=float)
+        
+        holdings.append({
+            'symbol': symbol,
+            'shares': shares,
+            'avg_cost': avg_cost,
+            'total_value': shares * avg_cost
+        })
+    
+    if not holdings:
+        console.print("No holdings entered.", style="yellow")
+        return
+    
+    # Display portfolio summary
+    portfolio_table = Table(title="Your Portfolio", show_header=True, header_style="bold blue")
+    portfolio_table.add_column("Symbol", style="cyan")
+    portfolio_table.add_column("Shares", style="white")
+    portfolio_table.add_column("Avg Cost", style="white")
+    portfolio_table.add_column("Total Value", style="green")
+    
+    total_portfolio_value = 0
+    for holding in holdings:
+        portfolio_table.add_row(
+            holding['symbol'],
+            f"{holding['shares']:.2f}",
+            f"${holding['avg_cost']:.2f}",
+            f"${holding['total_value']:,.2f}"
+        )
+        total_portfolio_value += holding['total_value']
+    
+    console.print(portfolio_table)
+    console.print(f"\nTotal Portfolio Value: ${total_portfolio_value:,.2f}", style="bold green")
+    
+    # Offer analysis on individual holdings
+    analyze_choice = typer.prompt("\nWould you like AI analysis on any specific holding? (y/n)", default="n")
+    
+    if analyze_choice.lower() == 'y':
+        symbols = [h['symbol'] for h in holdings]
+        stock_to_analyze = typer.prompt(f"Which stock would you like to analyze? ({'/'.join(symbols)})")
+        if stock_to_analyze.upper() in [s.upper() for s in symbols]:
+            holding = next(h for h in holdings if h['symbol'].upper() == stock_to_analyze.upper())
+            run_detailed_stock_analysis(stock_to_analyze.upper(), holding['total_value'])
+        else:
+            console.print("Invalid stock symbol.", style="red")
+
+
+def compare_stocks():
+    """Compare multiple stocks for investment decision"""
+    console.print("\n[STOCK COMPARISON]", style="bold blue")
+    
+    # Get stocks to compare
+    stocks_to_compare = []
+    console.print("Enter up to 3 stocks to compare (press Enter with empty symbol to finish):")
+    
+    while len(stocks_to_compare) < 3:
+        symbol = typer.prompt(f"Stock symbol #{len(stocks_to_compare) + 1}", default="").upper()
+        if not symbol:
+            break
+        stocks_to_compare.append(symbol)
+    
+    if len(stocks_to_compare) < 2:
+        console.print("Need at least 2 stocks to compare.", style="red")
+        return
+    
+    investment_amount = typer.prompt("Investment amount for comparison ($)", type=float)
+    
+    # Show comparison table
+    comparison_table = Table(title="Stock Comparison", show_header=True, header_style="bold blue")
+    comparison_table.add_column("Stock", style="cyan")
+    comparison_table.add_column("Status", style="white")
+    comparison_table.add_column("Action", style="yellow")
+    
+    for symbol in stocks_to_compare:
+        comparison_table.add_row(symbol, "Ready for Analysis", "Run AI Analysis")
+    
+    console.print(comparison_table)
+    
+    # Offer to run analysis on each
+    for symbol in stocks_to_compare:
+        analyze_choice = typer.prompt(f"\nAnalyze {symbol} with AI? (y/n)", default="y")
+        if analyze_choice.lower() == 'y':
+            run_detailed_stock_analysis(symbol, investment_amount)
+
+
+def run_detailed_stock_analysis(symbol, investment_amount):
+    """Run detailed AI analysis on a specific stock"""
+    console.print(f"\n[AI MULTI-AGENT ANALYSIS] {symbol}", style="bold blue")
+    console.print(f"Investment Amount: ${investment_amount:,.2f}")
+    
+    try:
+        # Use current date for analysis
+        analysis_date = datetime.datetime.now().strftime("%Y-%m-%d")
+        
+        # Create config with moderate research depth
+        config = DEFAULT_CONFIG.copy()
+        config["max_debate_rounds"] = 2  # Moderate depth for advisory
+        config["max_risk_discuss_rounds"] = 2
+        
+        # Initialize the graph with all analysts
+        analysts = ["market", "news", "fundamentals", "social"]
+        graph = TradingAgentsGraph(analysts, config=config, debug=False)
+        
+        console.print(f"\nActivating AI Analysts for {symbol}:", style="yellow")
+        console.print("✓ Market Analyst - Analyzing technical indicators and price action")
+        console.print("✓ News Analyst - Scanning latest news and events")
+        console.print("✓ Fundamentals Analyst - Evaluating financials and valuation")
+        console.print("✓ Social Analyst - Checking market sentiment and trends")
+        console.print("✓ Research Team - Bull vs Bear debate")
+        console.print("✓ Risk Management - Evaluating risk/reward")
+        console.print("✓ Portfolio Manager - Final investment decision")
+        
+        # Create a simple progress indicator
+        with console.status(f"\nRunning full AI analysis on {symbol}...", spinner="dots"):
+            # Run the analysis
+            final_state, processed_decision = graph.propagate(symbol, analysis_date)
+        
+        # Display results
+        display_advisory_results(symbol, final_state, processed_decision, investment_amount)
+        
+    except Exception as e:
+        console.print(f"Error during analysis: {str(e)}", style="red")
+        console.print("Please check your API credentials and try again.", style="yellow")
+
+
+def display_advisory_results(symbol, final_state, decision, investment_amount):
+    """Display advisory analysis results"""
+    console.print(f"\n{'='*60}")
+    console.print(f"ANALYSIS RESULTS - {symbol}", style="bold blue")
+    console.print(f"{'='*60}")
+    
+    # Extract decision action
+    decision_upper = decision.upper()
+    if 'BUY' in decision_upper:
+        action = 'BUY'
+        action_color = 'green'
+    elif 'SELL' in decision_upper:
+        action = 'SELL'
+        action_color = 'red'
+    else:
+        action = 'HOLD'
+        action_color = 'yellow'
+    
+    # Main recommendation
+    recommendation_table = Table(title="Investment Recommendation", show_header=True, header_style="bold blue")
+    recommendation_table.add_column("Metric", style="cyan")
+    recommendation_table.add_column("Value", style="white")
+    
+    recommendation_table.add_row("Stock Symbol", symbol)
+    recommendation_table.add_row("Analysis Date", datetime.datetime.now().strftime("%Y-%m-%d"))
+    recommendation_table.add_row("Investment Amount", f"${investment_amount:,.2f}")
+    recommendation_table.add_row("Recommended Action", f"[{action_color}]{action}[/{action_color}]")
+    
+    console.print(recommendation_table)
+    
+    # Show individual analyst reports in compact format
+    analyst_reports = []
+    
+    if final_state.get("market_report"):
+        analyst_reports.append(("Market Analysis", final_state["market_report"][:200] + "..."))
+    
+    if final_state.get("news_report"):
+        analyst_reports.append(("News Analysis", final_state["news_report"][:200] + "..."))
+    
+    if final_state.get("fundamentals_report"):
+        analyst_reports.append(("Fundamentals Analysis", final_state["fundamentals_report"][:200] + "..."))
+    
+    if final_state.get("sentiment_report"):
+        analyst_reports.append(("Social Sentiment", final_state["sentiment_report"][:200] + "..."))
+    
+    if analyst_reports:
+        reports_table = Table(title="Analyst Insights", show_header=True, header_style="bold green")
+        reports_table.add_column("Analyst", style="cyan", width=20)
+        reports_table.add_column("Key Insights", style="white")
+        
+        for analyst, report in analyst_reports:
+            reports_table.add_row(analyst, report)
+        
+        console.print(reports_table)
+    
+    # Final decision reasoning
+    if final_state.get("final_trade_decision"):
+        console.print(f"\n[PORTFOLIO MANAGER DECISION]", style="bold blue")
+        console.print(Panel(
+            final_state["final_trade_decision"][:500] + ("..." if len(final_state["final_trade_decision"]) > 500 else ""),
+            title="Investment Reasoning",
+            border_style="blue"
+        ))
+    
+    # Summary
+    console.print(f"\n[SUMMARY]", style="bold blue")
+    if action == 'BUY':
+        console.print(f"✅ RECOMMENDATION: Consider investing ${investment_amount:,.2f} in {symbol}", style="bold green")
+    elif action == 'SELL':
+        console.print(f"❌ RECOMMENDATION: Consider selling or avoiding {symbol} at this time", style="bold red")
+    else:
+        console.print(f"⏸️ RECOMMENDATION: Hold current position or wait for better entry point in {symbol}", style="bold yellow")
+    
+    console.print("\nPress Enter to continue...", style="dim")
+    input()
+
+
 @app.command()
 def analyze():
     run_analysis()
+
+
+@app.callback(invoke_without_command=True)
+def main(ctx: typer.Context):
+    """Show main menu if no command is specified"""
+    if ctx.invoked_subcommand is None:
+        main_menu()
 
 
 if __name__ == "__main__":

@@ -22,3 +22,8 @@ redis
 chainlit
 rich
 questionary
+click
+alpaca-trade-api
+numpy
+scipy
+scikit-learn
